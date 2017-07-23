@@ -1,13 +1,13 @@
 [package]
 authors = ["David Flemström <david.flemstrom@gmail.com>"]
 description = "Support for Google Protocol Buffers in combination with serde"
-documentation = "http://dflemstr.github.io/rq/serde-protobuf/"
-homepage = "https://github.com/dflemstr/rq/tree/master/serde-protobuf"
+documentation = "https://docs.rs/serde-protobuf"
+homepage = "https://github.com/dflemstr/serde-protobuf"
 include = ["src/**/*", "tests/**/*", "testdata/**/*", "Cargo.toml"]
 keywords = ["serde", "protocol", "buffers", "protobuf", "google"]
 license = "Apache-2.0"
 name = "serde-protobuf"
-repository = "https://github.com/dflemstr/rq/tree/master/serde-protobuf"
+repository = "https://github.com/dflemstr/serde-protobuf"
 version = "0.5.0"
 
 [dependencies]
