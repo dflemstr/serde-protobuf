@@ -1,4 +1,4 @@
-# serde_protobuf [![Crates.io](https://img.shields.io/crates/v/serde_protobuf.svg?maxAge=2592000)]()
+# `serde-protobuf` [![crates.io badge](https://img.shields.io/crates/v/serde-protobuf.svg)](https://crates.io/crates/serde-protobuf) [![docs.rs badge](https://docs.rs/serde-protobuf/badge.svg)](https://docs.rs/serde-protobuf)
 
 Support for [Google protocol buffers][1] in combination with `serde`.
 
