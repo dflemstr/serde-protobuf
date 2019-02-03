@@ -7,8 +7,8 @@ extern crate serde_protobuf;
 use std::collections;
 use std::fs;
 
-use serde_protobuf::descriptor;
 use serde_protobuf::de;
+use serde_protobuf::descriptor;
 
 mod protobuf_unittest;
 
@@ -118,55 +118,55 @@ impl Subset for serde_value::Value {
                 for (ka, va) in ma {
                     if let Some(vb) = mb.get(ka) {
                         if !va.subset_of(vb) {
-                            return false
+                            return false;
                         }
                     } else {
-                        return false
+                        return false;
                     }
                 }
                 true
-            },
-            (&Option(Some(ref sa)), &Option(Some(ref sb))) => {
-                sa.subset_of(&*sb)
-            },
-            _ => self == other
+            }
+            (&Option(Some(ref sa)), &Option(Some(ref sb))) => sa.subset_of(&*sb),
+            _ => self == other,
         }
     }
 }
 
 macro_rules! assert_subset {
-    ($left:expr , $right:expr) => ({
+    ($left:expr , $right:expr) => {{
         match (&$left, &$right) {
             (left_val, right_val) => {
                 if !(left_val.subset_of(right_val)) {
-                    panic!("assertion failed: `(left.subset_of(right))` \
-                            (left: `{:?}`, right: `{:?}`)", left_val, right_val)
+                    panic!(
+                        "assertion failed: `(left.subset_of(right))` \
+                         (left: `{:?}`, right: `{:?}`)",
+                        left_val, right_val
+                    )
                 }
             }
         }
-    })
+    }};
 }
 
 macro_rules! roundtrip {
-    ($t:ty, $v:ident, $s:stmt) => {
-        {
-            use serde::de::Deserialize;
+    ($t:ty, $v:ident, $s:stmt) => {{
+        use serde::de::Deserialize;
 
-            let mut file = fs::File::open("testdata/descriptors.pb").unwrap();
-            let proto = protobuf::parse_from_reader(&mut file).unwrap();
-            let descriptors = descriptor::Descriptors::from_proto(&proto);
+        let mut file = fs::File::open("testdata/descriptors.pb").unwrap();
+        let proto = protobuf::parse_from_reader(&mut file).unwrap();
+        let descriptors = descriptor::Descriptors::from_proto(&proto);
 
-            let mut $v = <$t>::new();
-            $s;
-            let bytes = protobuf::Message::write_to_bytes(&mut $v).unwrap();
-            let input = protobuf::CodedInputStream::from_bytes(&bytes);
+        let mut $v = <$t>::new();
+        $s;
+        let bytes = protobuf::Message::write_to_bytes(&mut $v).unwrap();
+        let input = protobuf::CodedInputStream::from_bytes(&bytes);
 
-            let message_name = format!(".{}", protobuf::Message::descriptor(&$v).full_name());
+        let message_name = format!(".{}", protobuf::Message::descriptor(&$v).full_name());
 
-            let mut deserializer = de::Deserializer::for_named_message(&descriptors, &message_name, input).unwrap();
-            serde_value::Value::deserialize(&mut deserializer).unwrap()
-        }
-    }
+        let mut deserializer =
+            de::Deserializer::for_named_message(&descriptors, &message_name, input).unwrap();
+        serde_value::Value::deserialize(&mut deserializer).unwrap()
+    }};
 }
 
 #[test]
@@ -175,11 +175,14 @@ fn roundtrip_optional_message() {
         v.mut_optional_nested_message().set_bb(1);
     });
 
-    assert_subset!(value!(map {
-        (str: "optional_nested_message") => (some map {
-            (str: "bb") => (some i32: 1)
-        })
-    }), v)
+    assert_subset!(
+        value!(map {
+            (str: "optional_nested_message") => (some map {
+                (str: "bb") => (some i32: 1)
+            })
+        }),
+        v
+    )
 }
 
 #[test]
@@ -188,9 +191,12 @@ fn roundtrip_optional_enum() {
         v.set_optional_nested_enum(protobuf_unittest::unittest::TestAllTypes_NestedEnum::BAZ);
     });
 
-    assert_subset!(value!(map {
-        (str: "optional_nested_enum") => (some str: "BAZ")
-    }), v)
+    assert_subset!(
+        value!(map {
+            (str: "optional_nested_enum") => (some str: "BAZ")
+        }),
+        v
+    )
 }
 
 #[test]
@@ -201,11 +207,14 @@ fn roundtrip_required() {
         v.set_c(3);
     });
 
-    assert_subset!(value!(map {
-        (str: "a") => (i32: 1),
-        (str: "b") => (i32: 2),
-        (str: "c") => (i32: 3)
-    }), v)
+    assert_subset!(
+        value!(map {
+            (str: "a") => (i32: 1),
+            (str: "b") => (i32: 2),
+            (str: "c") => (i32: 3)
+        }),
+        v
+    )
 }
 
 #[test]
@@ -216,34 +225,42 @@ fn roundtrip_repeated_message() {
         v.mut_repeated_nested_message().push_default().set_bb(3);
     });
 
-    assert_subset!(value!(map {
-        (str: "repeated_nested_message") => (seq [
-            (map {
-                (str: "bb") => (some i32: 1)
-            }),
-            (map {
-                (str: "bb") => (some i32: 2)
-            }),
-            (map {
-                (str: "bb") => (some i32: 3)
-            })
-        ])
-    }), v)
+    assert_subset!(
+        value!(map {
+            (str: "repeated_nested_message") => (seq [
+                (map {
+                    (str: "bb") => (some i32: 1)
+                }),
+                (map {
+                    (str: "bb") => (some i32: 2)
+                }),
+                (map {
+                    (str: "bb") => (some i32: 3)
+                })
+            ])
+        }),
+        v
+    )
 }
 
 #[test]
 fn roundtrip_repeated_enum() {
     let v = roundtrip!(protobuf_unittest::unittest::TestAllTypes, v, {
-        v.mut_repeated_nested_enum().push(protobuf_unittest::unittest::TestAllTypes_NestedEnum::BAZ);
-        v.mut_repeated_nested_enum().push(protobuf_unittest::unittest::TestAllTypes_NestedEnum::FOO);
-        v.mut_repeated_nested_enum().push(protobuf_unittest::unittest::TestAllTypes_NestedEnum::BAR);
+        v.mut_repeated_nested_enum()
+            .push(protobuf_unittest::unittest::TestAllTypes_NestedEnum::BAZ);
+        v.mut_repeated_nested_enum()
+            .push(protobuf_unittest::unittest::TestAllTypes_NestedEnum::FOO);
+        v.mut_repeated_nested_enum()
+            .push(protobuf_unittest::unittest::TestAllTypes_NestedEnum::BAR);
     });
 
-    assert_subset!(value!(map {
-        (str: "repeated_nested_enum") => (seq [(str: "BAZ"), (str: "FOO"), (str: "BAR")])
-    }), v)
+    assert_subset!(
+        value!(map {
+            (str: "repeated_nested_enum") => (seq [(str: "BAZ"), (str: "FOO"), (str: "BAR")])
+        }),
+        v
+    )
 }
-
 
 #[test]
 fn roundtrip_recursive() {
@@ -252,18 +269,21 @@ fn roundtrip_recursive() {
         v.mut_a().mut_a().mut_a().mut_a().set_i(4);
     });
 
-    assert_subset!(value!(map {
-        (str: "a") => (some map {
+    assert_subset!(
+        value!(map {
             (str: "a") => (some map {
-                (str: "i") => (some i32: 3),
                 (str: "a") => (some map {
+                    (str: "i") => (some i32: 3),
                     (str: "a") => (some map {
-                        (str: "i") => (some i32: 4)
+                        (str: "a") => (some map {
+                            (str: "i") => (some i32: 4)
+                        })
                     })
                 })
             })
-        })
-    }), v)
+        }),
+        v
+    )
 }
 
 macro_rules! check_roundtrip_singular {
@@ -340,18 +360,108 @@ macro_rules! check_roundtrip_repeated {
     }
 }
 
-check_roundtrip_repeated!(roundtrip_repeated_int32, repeated_int32, mut_repeated_int32, [42, 21, 0], i32);
-check_roundtrip_repeated!(roundtrip_repeated_int64, repeated_int64, mut_repeated_int64, [42, 21, 0], i64);
-check_roundtrip_repeated!(roundtrip_repeated_uint32, repeated_uint32, mut_repeated_uint32, [42, 21, 0], u32);
-check_roundtrip_repeated!(roundtrip_repeated_uint64, repeated_uint64, mut_repeated_uint64, [42, 21, 0], u64);
-check_roundtrip_repeated!(roundtrip_repeated_sint32, repeated_sint32, mut_repeated_sint32, [42, 21, 0], i32);
-check_roundtrip_repeated!(roundtrip_repeated_sint64, repeated_sint64, mut_repeated_sint64, [42, 21, 0], i64);
-check_roundtrip_repeated!(roundtrip_repeated_fixed32, repeated_fixed32, mut_repeated_fixed32, [42, 21, 0], u32);
-check_roundtrip_repeated!(roundtrip_repeated_fixed64, repeated_fixed64, mut_repeated_fixed64, [42, 21, 0], u64);
-check_roundtrip_repeated!(roundtrip_repeated_sfixed32, repeated_sfixed32, mut_repeated_sfixed32, [42, 21, 0], i32);
-check_roundtrip_repeated!(roundtrip_repeated_sfixed64, repeated_sfixed64, mut_repeated_sfixed64, [42, 21, 0], i64);
-check_roundtrip_repeated!(roundtrip_repeated_float, repeated_float, mut_repeated_float, [0.4, 0.0, 1.0], f32);
-check_roundtrip_repeated!(roundtrip_repeated_double, repeated_double, mut_repeated_double, [0.4, 0.0, 1.0], f64);
-check_roundtrip_repeated!(roundtrip_repeated_bool, repeated_bool, mut_repeated_bool, [true, true, false], bool);
-check_roundtrip_repeated!(roundtrip_repeated_string, repeated_string, mut_repeated_string, ["hello".to_owned(), "".to_owned()], string);
-check_roundtrip_repeated!(roundtrip_repeated_bytes, repeated_bytes, mut_repeated_bytes, [vec![1, 2, 3], vec![2, 3, 4]], byte_buf);
+check_roundtrip_repeated!(
+    roundtrip_repeated_int32,
+    repeated_int32,
+    mut_repeated_int32,
+    [42, 21, 0],
+    i32
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_int64,
+    repeated_int64,
+    mut_repeated_int64,
+    [42, 21, 0],
+    i64
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_uint32,
+    repeated_uint32,
+    mut_repeated_uint32,
+    [42, 21, 0],
+    u32
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_uint64,
+    repeated_uint64,
+    mut_repeated_uint64,
+    [42, 21, 0],
+    u64
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_sint32,
+    repeated_sint32,
+    mut_repeated_sint32,
+    [42, 21, 0],
+    i32
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_sint64,
+    repeated_sint64,
+    mut_repeated_sint64,
+    [42, 21, 0],
+    i64
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_fixed32,
+    repeated_fixed32,
+    mut_repeated_fixed32,
+    [42, 21, 0],
+    u32
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_fixed64,
+    repeated_fixed64,
+    mut_repeated_fixed64,
+    [42, 21, 0],
+    u64
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_sfixed32,
+    repeated_sfixed32,
+    mut_repeated_sfixed32,
+    [42, 21, 0],
+    i32
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_sfixed64,
+    repeated_sfixed64,
+    mut_repeated_sfixed64,
+    [42, 21, 0],
+    i64
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_float,
+    repeated_float,
+    mut_repeated_float,
+    [0.4, 0.0, 1.0],
+    f32
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_double,
+    repeated_double,
+    mut_repeated_double,
+    [0.4, 0.0, 1.0],
+    f64
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_bool,
+    repeated_bool,
+    mut_repeated_bool,
+    [true, true, false],
+    bool
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_string,
+    repeated_string,
+    mut_repeated_string,
+    ["hello".to_owned(), "".to_owned()],
+    string
+);
+check_roundtrip_repeated!(
+    roundtrip_repeated_bytes,
+    repeated_bytes,
+    mut_repeated_bytes,
+    [vec![1, 2, 3], vec![2, 3, 4]],
+    byte_buf
+);

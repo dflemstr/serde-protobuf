@@ -12,19 +12,27 @@
 //! Serialization is not yet implemented in this version.
 //!
 //! [1]: https://developers.google.com/protocol-buffers/
+#![deny(warnings)]
+#![deny(clippy::all)]
+#![deny(
+    missing_debug_implementations,
+    missing_docs,
+    trivial_casts,
+    trivial_numeric_casts,
+    unused_extern_crates,
+    unused_import_braces,
+    unused_qualifications
+)]
 #[macro_use]
 extern crate failure;
-extern crate linked_hash_map;
 #[macro_use]
 extern crate log;
-extern crate protobuf;
 #[macro_use]
 extern crate serde;
 
 pub mod de;
 pub mod descriptor;
 pub mod error;
-pub mod ser;
 pub mod value;
 
 pub use crate::error::Error;
