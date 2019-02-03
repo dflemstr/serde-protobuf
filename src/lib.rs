@@ -27,4 +27,4 @@ pub mod error;
 pub mod ser;
 pub mod value;
 
-pub use error::Error;
+pub use crate::error::Error;

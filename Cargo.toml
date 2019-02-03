@@ -9,6 +9,7 @@ license = "Apache-2.0"
 name = "serde-protobuf"
 repository = "https://github.com/dflemstr/serde-protobuf"
 version = "0.7.0"
+edition = "2018"
 
 [dependencies]
 failure = "0.1.5"

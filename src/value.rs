@@ -3,8 +3,8 @@ use std::collections;
 use protobuf;
 use protobuf::stream::wire_format;
 
-use descriptor;
-use error;
+use crate::descriptor;
+use crate::error;
 
 #[derive(Clone, Debug)]
 pub enum Value {
@@ -93,7 +93,7 @@ impl Field {
                       wire_type: protobuf::stream::wire_format::WireType)
                       -> error::Result<()> {
         // Make the type dispatch below more compact
-        use descriptor::FieldType::*;
+        use crate::descriptor::FieldType::*;
         use protobuf::CodedInputStream as I;
         use protobuf::stream::wire_format::WireType::*;
 

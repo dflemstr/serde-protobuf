@@ -65,14 +65,14 @@
 //! ```
 
 
-use descriptor;
-use error;
+use crate::descriptor;
+use crate::error;
 
 use protobuf;
 use serde;
 use std::collections;
 use std::vec;
-use value;
+use crate::value;
 
 /// A deserializer that can deserialize a single message type.
 pub struct Deserializer<'de> {

@@ -132,8 +132,8 @@ use std::f64;
 use linked_hash_map;
 use protobuf::descriptor;
 
-use error;
-use value;
+use crate::error;
+use crate::value;
 
 /// An ID used for internal tracking of resolved message descriptors.
 ///
