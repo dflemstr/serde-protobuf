@@ -682,7 +682,7 @@ fn parse_default_value(value: &str, field_type: &InternalFieldType) -> error::Re
     use std::str::FromStr;
 
     fn bad(v: &str) -> error::Error {
-        error::ErrorKind::BadDefaultValue(v.to_owned()).into()
+        error::Error::BadDefaultValue { default_value: v.to_owned() }
     }
 
     match *field_type {

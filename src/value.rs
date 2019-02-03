@@ -134,8 +134,8 @@ impl Field {
             Enum(_) => self.merge_enum(input, wire_type),
             Message(ref m) => self.merge_message(input, descriptors, m, wire_type),
             Group => unimplemented!(),
-            UnresolvedEnum(e) => Err(error::ErrorKind::UnknownEnum(e.to_owned()).into()),
-            UnresolvedMessage(m) => Err(error::ErrorKind::UnknownMessage(m.to_owned()).into()),
+            UnresolvedEnum(e) => Err(error::Error::UnknownEnum { name: e.to_owned() }),
+            UnresolvedMessage(m) => Err(error::Error::UnknownMessage { name: m.to_owned() }),
         }
     }
 
@@ -154,7 +154,7 @@ impl Field {
             self.put(value_ctor(reader(input)?));
             Ok(())
         } else {
-            Err(error::ErrorKind::BadWireType(actual_wire_type).into())
+            Err(error::Error::BadWireType { wire_type: actual_wire_type })
         }
     }
 
@@ -198,7 +198,7 @@ impl Field {
             self.put(Value::Enum(v));
             Ok(())
         } else {
-            Err(error::ErrorKind::BadWireType(actual_wire_type).into())
+            Err(error::Error::BadWireType { wire_type: actual_wire_type })
         }
     }
 
@@ -214,7 +214,7 @@ impl Field {
             let mut msg = match *self {
                 Field::Singular(ref mut o) => {
                     if let Some(Value::Message(m)) = o.take() { m } else { Message::new(message) }
-                },
+                }
                 _ => Message::new(message),
             };
 
@@ -225,7 +225,7 @@ impl Field {
             self.put(Value::Message(msg));
             Ok(())
         } else {
-            Err(error::ErrorKind::BadWireType(actual_wire_type).into())
+            Err(error::Error::BadWireType { wire_type: actual_wire_type })
         }
     }
 

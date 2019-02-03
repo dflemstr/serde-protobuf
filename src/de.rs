@@ -30,8 +30,13 @@
 //! #     Error
 //! #   }
 //! # }
-//! # impl From<serde_protobuf::Error> for Error {
-//! #   fn from(a: serde_protobuf::Error) -> Error {
+//! # impl From<serde_protobuf::error::Error> for Error {
+//! #   fn from(a: serde_protobuf::error::Error) -> Error {
+//! #     Error
+//! #   }
+//! # }
+//! # impl From<serde_protobuf::error::CompatError> for Error {
+//! #   fn from(a: serde_protobuf::error::CompatError) -> Error {
 //! #     Error
 //! #   }
 //! # }
@@ -132,13 +137,13 @@ impl<'de> Deserializer<'de> {
         if let Some(message) = descriptors.message_by_name(message_name) {
             Ok(Deserializer::new(descriptors, message, input))
         } else {
-            Err(error::ErrorKind::UnknownMessage(message_name.to_owned()).into())
+            Err(error::Error::UnknownMessage { name: message_name.to_owned()})
         }
     }
 }
 
 impl<'de, 'b> serde::Deserializer<'de> for &'b mut Deserializer<'de> {
-    type Error = error::Error;
+    type Error = error::CompatError;
 
     forward_to_deserialize_any! {
         bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 char str string bytes
@@ -172,10 +177,10 @@ impl<'de> MessageVisitor<'de> {
 }
 
 impl<'de> serde::de::MapAccess<'de> for MessageVisitor<'de> {
-    type Error = error::Error;
+    type Error = error::CompatError;
 
     #[inline]
-    fn next_key_seed<K>(&mut self, seed: K) -> error::Result<Option<K::Value>>
+    fn next_key_seed<K>(&mut self, seed: K) -> error::CompatResult<Option<K::Value>>
         where K: serde::de::DeserializeSeed<'de>
     {
         if let Some((k, v)) = self.fields.next() {
@@ -189,7 +194,7 @@ impl<'de> serde::de::MapAccess<'de> for MessageVisitor<'de> {
     }
 
     #[inline]
-    fn next_value_seed<V>(&mut self, seed: V) -> error::Result<V::Value>
+    fn next_value_seed<V>(&mut self, seed: V) -> error::CompatResult<V::Value>
         where V: serde::de::DeserializeSeed<'de>
     {
         let (descriptor, field) = self.field
@@ -208,7 +213,7 @@ impl<'de> MessageKeyDeserializer<'de> {
 }
 
 impl<'de> serde::Deserializer<'de> for MessageKeyDeserializer<'de> {
-    type Error = error::Error;
+    type Error = error::CompatError;
 
     forward_to_deserialize_any! {
         bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 char str string bytes
@@ -217,7 +222,7 @@ impl<'de> serde::Deserializer<'de> for MessageKeyDeserializer<'de> {
     }
 
     #[inline]
-    fn deserialize_any<V>(self, visitor: V) -> error::Result<V::Value>
+    fn deserialize_any<V>(self, visitor: V) -> error::CompatResult<V::Value>
         where V: serde::de::Visitor<'de>
     {
         visitor.visit_str(self.descriptor.name())
@@ -239,7 +244,7 @@ impl<'de> MessageFieldDeserializer<'de> {
 }
 
 impl<'de> serde::Deserializer<'de> for MessageFieldDeserializer<'de> {
-    type Error = error::Error;
+    type Error = error::CompatError;
 
     forward_to_deserialize_any! {
         bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 char str string bytes
@@ -248,7 +253,7 @@ impl<'de> serde::Deserializer<'de> for MessageFieldDeserializer<'de> {
     }
 
     #[inline]
-    fn deserialize_any<V>(mut self, visitor: V) -> error::Result<V::Value>
+    fn deserialize_any<V>(mut self, visitor: V) -> error::CompatResult<V::Value>
         where V: serde::de::Visitor<'de>
     {
         let ds = self.descriptors;
@@ -271,7 +276,7 @@ impl<'de> serde::Deserializer<'de> for MessageFieldDeserializer<'de> {
             Some(value::Field::Repeated(vs)) => {
                 visitor.visit_seq(&mut RepeatedValueVisitor::new(ds, d, vs.into_iter()))
             },
-            None => bail!(error::ErrorKind::EndOfStream),
+            None => Err(error::Error::EndOfStream.into()),
         }
     }
 }
@@ -291,10 +296,10 @@ impl<'de> RepeatedValueVisitor<'de> {
 }
 
 impl<'de> serde::de::SeqAccess<'de> for RepeatedValueVisitor<'de> {
-    type Error = error::Error;
+    type Error = error::CompatError;
 
     #[inline]
-    fn next_element_seed<A>(&mut self, seed: A) -> error::Result<Option<A::Value>>
+    fn next_element_seed<A>(&mut self, seed: A) -> error::CompatResult<Option<A::Value>>
         where A: serde::de::DeserializeSeed<'de>
     {
         let ds = self.descriptors;
@@ -326,7 +331,7 @@ impl<'de> ValueDeserializer<'de> {
 }
 
 impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
-    type Error = error::Error;
+    type Error = error::CompatError;
 
     forward_to_deserialize_any! {
         bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 char str string bytes
@@ -335,12 +340,12 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
     }
 
     #[inline]
-    fn deserialize_any<V>(mut self, visitor: V) -> error::Result<V::Value>
+    fn deserialize_any<V>(mut self, visitor: V) -> error::CompatResult<V::Value>
         where V: serde::de::Visitor<'de>
     {
         match self.value.take() {
             Some(value) => visit_value(self.descriptors, self.descriptor, value, visitor),
-            None => bail!(error::ErrorKind::EndOfStream),
+            None => Err(error::Error::EndOfStream.into()),
         }
     }
 }
@@ -350,7 +355,7 @@ fn visit_value<'de, V>(descriptors: &'de descriptor::Descriptors,
                        descriptor: &'de descriptor::FieldDescriptor,
                        value: value::Value,
                        visitor: V)
-                       -> error::Result<V::Value>
+                       -> error::CompatResult<V::Value>
     where V: serde::de::Visitor<'de>
 {
     match value {
