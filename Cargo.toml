@@ -13,10 +13,10 @@ edition = "2018"
 
 [dependencies]
 failure = "0.1.5"
-linked-hash-map = "0.5.1"
-log = "0.4.6"
-protobuf = "2.3.0"
-serde = "1.0.86"
+linked-hash-map = "0.5.2"
+log = "0.4.8"
+protobuf = "2.8.0"
+serde = "1.0.98"
 
 [dev-dependencies]
-serde-value = "0.5.3"
+serde-value = "0.6.0"
