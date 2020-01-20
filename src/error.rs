@@ -15,7 +15,7 @@ pub type Result<A> = result::Result<A, Error>;
 pub enum Error {
     /// A native protobuf error.
     #[fail(display = "protobuf error")]
-    Protobuf(protobuf::ProtobufError),
+    Protobuf(#[cause] protobuf::ProtobufError),
     /// The end of stream was reached.
     #[fail(display = "end of stream")]
     EndOfStream,
