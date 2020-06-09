@@ -298,13 +298,7 @@ impl<'de> serde::Deserializer<'de> for MessageFieldDeserializer<'de> {
                     visitor.visit_unit()
                 }
             }
-            Some(value::Field::Singular(Some(v))) => {
-                if d.field_label() == descriptor::FieldLabel::Optional {
-                    visitor.visit_some(ValueDeserializer::new(ds, d, v))
-                } else {
-                    visit_value(ds, d, v, visitor)
-                }
-            }
+            Some(value::Field::Singular(Some(v))) => visit_value(ds, d, v, visitor),
             Some(value::Field::Repeated(vs)) => {
                 visitor.visit_seq(&mut RepeatedValueVisitor::new(ds, d, vs.into_iter()))
             }
