@@ -279,7 +279,7 @@ impl<'de> serde::Deserializer<'de> for MessageFieldDeserializer<'de> {
 
     forward_to_deserialize_any! {
         bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 char str string bytes
-        byte_buf option unit unit_struct newtype_struct seq tuple
+        byte_buf unit unit_struct newtype_struct seq tuple
         tuple_struct map struct enum identifier ignored_any
     }
 
@@ -298,17 +298,27 @@ impl<'de> serde::Deserializer<'de> for MessageFieldDeserializer<'de> {
                     visitor.visit_unit()
                 }
             }
-            Some(value::Field::Singular(Some(v))) => {
-                if d.field_label() == descriptor::FieldLabel::Optional {
-                    visitor.visit_some(ValueDeserializer::new(ds, d, v))
-                } else {
-                    visit_value(ds, d, v, visitor)
-                }
-            }
+            Some(value::Field::Singular(Some(v))) => visit_value(ds, d, v, visitor),
             Some(value::Field::Repeated(vs)) => {
                 visitor.visit_seq(&mut RepeatedValueVisitor::new(ds, d, vs.into_iter()))
             }
             None => Err(error::Error::EndOfStream.into()),
+        }
+    }
+
+    fn deserialize_option<V>(mut self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        let ds = self.descriptors;
+        let d = self.descriptor;
+        match self.field.take() {
+            Some(value::Field::Singular(Some(v)))
+                if d.field_label() == descriptor::FieldLabel::Optional =>
+            {
+                visitor.visit_some(ValueDeserializer::new(ds, d, v))
+            }
+            _ => self.deserialize_any(visitor),
         }
     }
 }
