@@ -4,7 +4,7 @@ use std::fmt;
 use std::result;
 
 use protobuf;
-use protobuf::stream::wire_format;
+use protobuf::wire_format;
 use serde;
 
 /// A result whose error type is `Error`.
@@ -64,8 +64,8 @@ pub type CompatResult<A> = result::Result<A, CompatError>;
 #[derive(Debug)]
 pub struct CompatError(failure::Compat<Error>);
 
-impl From<protobuf::error::ProtobufError> for Error {
-    fn from(e: protobuf::error::ProtobufError) -> Self {
+impl From<protobuf::ProtobufError> for Error {
+    fn from(e: protobuf::ProtobufError) -> Self {
         Error::Protobuf(e)
     }
 }

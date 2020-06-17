@@ -2,7 +2,7 @@
 use std::collections;
 
 use protobuf;
-use protobuf::stream::wire_format;
+use protobuf::wire_format;
 
 use crate::descriptor;
 use crate::error;
@@ -123,11 +123,11 @@ impl Field {
         descriptors: &descriptor::Descriptors,
         field: &descriptor::FieldDescriptor,
         input: &mut protobuf::CodedInputStream,
-        wire_type: protobuf::stream::wire_format::WireType,
+        wire_type: protobuf::wire_format::WireType,
     ) -> error::Result<()> {
         // Make the type dispatch below more compact
         use crate::descriptor::FieldType::*;
-        use protobuf::stream::wire_format::WireType::*;
+        use protobuf::wire_format::WireType::*;
         use protobuf::CodedInputStream as I;
 
         // Singular scalar

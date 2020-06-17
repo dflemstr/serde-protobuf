@@ -351,7 +351,7 @@ impl Descriptors {
     /// Adds all types defined in the specified protocol buffer file descriptor set to this
     /// registry.
     pub fn add_file_set_proto(&mut self, file_set_proto: &descriptor::FileDescriptorSet) {
-        for file_proto in file_set_proto.get_file().iter() {
+        for file_proto in file_set_proto.file.iter() {
             self.add_file_proto(file_proto);
         }
     }
@@ -364,11 +364,11 @@ impl Descriptors {
             "".to_owned()
         };
 
-        for message_proto in file_proto.get_message_type().iter() {
+        for message_proto in file_proto.message_type.iter() {
             self.add_message_proto(&path, message_proto);
         }
 
-        for enum_proto in file_proto.get_enum_type().iter() {
+        for enum_proto in file_proto.enum_type.iter() {
             self.add_enum(EnumDescriptor::from_proto(&path, enum_proto));
         }
     }
@@ -378,11 +378,11 @@ impl Descriptors {
     pub fn add_message_proto(&mut self, path: &str, message_proto: &descriptor::DescriptorProto) {
         let message_descriptor = MessageDescriptor::from_proto(path, message_proto);
 
-        for nested_message_proto in message_proto.get_nested_type().iter() {
+        for nested_message_proto in message_proto.nested_type.iter() {
             self.add_message_proto(message_descriptor.name(), nested_message_proto);
         }
 
-        for nested_enum_proto in message_proto.get_enum_type().iter() {
+        for nested_enum_proto in message_proto.enum_type.iter() {
             self.add_enum(EnumDescriptor::from_proto(
                 message_descriptor.name(),
                 nested_enum_proto,
@@ -458,7 +458,7 @@ impl MessageDescriptor {
         let name = format!("{}.{}", path, proto.get_name());
         let mut message_descriptor = MessageDescriptor::new(name);
 
-        for field_proto in proto.get_field().iter() {
+        for field_proto in proto.field.iter() {
             message_descriptor.add_field(FieldDescriptor::from_proto(field_proto));
         }
 
@@ -522,7 +522,7 @@ impl EnumDescriptor {
 
         let mut enum_descriptor = EnumDescriptor::new(enum_name);
 
-        for value_proto in proto.get_value().iter() {
+        for value_proto in proto.value.iter() {
             enum_descriptor.add_value(EnumValueDescriptor::from_proto(value_proto));
         }
 
@@ -591,8 +591,8 @@ impl EnumValueDescriptor {
 
 impl FieldLabel {
     /// Converts a proto field label into a native field label.
-    pub fn from_proto(proto: descriptor::FieldDescriptorProto_Label) -> FieldLabel {
-        use protobuf::descriptor::FieldDescriptorProto_Label::*;
+    pub fn from_proto(proto: descriptor::field_descriptor_proto::Label) -> FieldLabel {
+        use protobuf::descriptor::field_descriptor_proto::Label::*;
 
         match proto {
             LABEL_OPTIONAL => FieldLabel::Optional,
@@ -611,10 +611,10 @@ impl FieldLabel {
 impl InternalFieldType {
     /// Converts a proto field type into a native field type.
     pub fn from_proto(
-        proto: descriptor::FieldDescriptorProto_Type,
+        proto: descriptor::field_descriptor_proto::Type,
         type_name: &str,
     ) -> InternalFieldType {
-        use protobuf::descriptor::FieldDescriptorProto_Type::*;
+        use protobuf::descriptor::field_descriptor_proto::Type::*;
         match proto {
             TYPE_DOUBLE => InternalFieldType::Double,
             TYPE_FLOAT => InternalFieldType::Float,
