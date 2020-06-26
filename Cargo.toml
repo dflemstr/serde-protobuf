@@ -15,7 +15,7 @@ edition = "2018"
 failure = "0.1.5"
 linked-hash-map = "0.5.1"
 log = "0.4.6"
-protobuf = { git = "https://github.com/stepancheg/rust-protobuf", branch = "master" }
+protobuf =  { version = "3.0.0-pre", features = ["with-serde"], git = "https://github.com/znly/rust-protobuf" }
 serde = "1.0.86"
 
 [dev-dependencies]
