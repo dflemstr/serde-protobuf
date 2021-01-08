@@ -151,13 +151,14 @@ macro_rules! assert_subset {
 macro_rules! roundtrip {
     ($t:ty, $v:ident, $s:stmt) => {{
         use serde::de::Deserialize;
+        use protobuf::Message;
 
         let mut file = fs::File::open("testdata/descriptors.pb").unwrap();
-        let proto = protobuf::parse_from_reader(&mut file).unwrap();
+        let proto = protobuf::descriptor::FileDescriptorSet::parse_from_reader(&mut file).unwrap();
         let descriptors = descriptor::Descriptors::from_proto(&proto);
 
         let mut $v = <$t>::new();
-        $s;
+        $s
         let bytes = protobuf::Message::write_to_bytes(&mut $v).unwrap();
         let input = protobuf::CodedInputStream::from_bytes(&bytes);
 

@@ -819,7 +819,7 @@ fn parse_default_value(value: &str, field_type: &InternalFieldType) -> error::Re
 mod test {
     use std::fs;
 
-    use protobuf;
+    use protobuf::{self, descriptor::FileDescriptorSet, Message};
 
     use super::FieldLabel::*;
     use super::FieldType::*;
@@ -827,7 +827,7 @@ mod test {
 
     fn load_descriptors() -> Descriptors {
         let mut file = fs::File::open("testdata/descriptors.pb").unwrap();
-        let proto = protobuf::parse_from_reader(&mut file).unwrap();
+        let proto = FileDescriptorSet::parse_from_reader(&mut file).unwrap();
 
         Descriptors::from_proto(&proto)
     }
