@@ -12,11 +12,11 @@ version = "0.8.2-alpha.0"
 edition = "2018"
 
 [dependencies]
-failure = "0.1.5"
-linked-hash-map = "0.5.1"
-log = "0.4.6"
-protobuf = "2.20.0"
-serde = "1.0.86"
+thiserror = "1.0"
+linked-hash-map = "0.5"
+log = "0.4"
+protobuf = "2"
+serde = "1.0"
 
 [dev-dependencies]
-serde-value = "0.5.3"
+serde-value = "0.7"
