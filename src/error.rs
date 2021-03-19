@@ -4,7 +4,7 @@ use std::fmt;
 use std::result;
 
 use protobuf;
-use protobuf::stream::wire_format;
+use protobuf::wire_format;
 use serde;
 
 /// A result whose error type is `Error`.
