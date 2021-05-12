@@ -3,7 +3,7 @@ use std::fmt;
 use std::result;
 
 use protobuf;
-use protobuf::stream::wire_format;
+use protobuf::wire_format;
 use serde;
 use thiserror::Error;
 
