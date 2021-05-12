@@ -12,7 +12,7 @@ version = "0.8.2-alpha.0"
 edition = "2018"
 
 [dependencies]
-failure = "0.1.8"
+thiserror = "1.0"
 linked-hash-map = "0.5.4"
 log = "0.4.14"
 protobuf = "2.23.0"
